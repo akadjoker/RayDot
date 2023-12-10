@@ -172,7 +172,7 @@ bool Shape2D::collide(Shape2D *other)
         for (int i=0;i<list->count();i++)
         {
             Shape2D *child = list->get(i);
-          //  if (child->collide(other))    return true;    
+            if (child->collide(other))    return true;    
         }
     }
 
@@ -199,7 +199,7 @@ void Shape2D::setGroups(long group, long mask)
 
 bool Shape2D::can(Shape2D *shape)
 {
-    // if (!shape) return false;
+    if (!shape) return false;
 
     // if ((group & shape->mask) != 0 && (shape->group & mask) != 0)
     // {

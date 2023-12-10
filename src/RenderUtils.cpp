@@ -485,43 +485,6 @@ if (flipy)
     quad.v[2].x = x3;    quad.v[2].y = y3;
     quad.v[3].x = x4;    quad.v[3].y = y4;
 
-    float centerX =(x1 + x2 + x3 + x4) / 4.0f;
-    float centerY =(y1 + y2 + y3 + y4) / 4.0f;
-
-
-    float SinT = sinf(spin); 
-    float CosT = cosf(spin); 
-
-
-
-
-
-//         int px =(int) x_pivot - centerX;
-//         int py =(int) -y_pivot - centerY;
-
-//         // px *= size  ;
-//         // py *= size  ;
-
-         
-//                 float cos_angle = ( float ) cos( spin * DEG2RAD);
-//                 float sin_angle = ( float ) sin( spin * DEG2RAD);
-
-
-//                 float rx = ( int )(( double )px * cos_angle - ( double )py * sin_angle ) ;
-//                 float ry = ( int )(( double )px * sin_angle + ( double )py * cos_angle ) ;
-
-//         px = rx ;
-//         py = ry ;
-
-//  for (int i=0;i<4;i++)
-//     {
-//        float x= quad.v[i].x ;
-//        float y= quad.v[i].y;
-//        quad.v[i].x=px + x;
-//        quad.v[i].y=py + y;
-
-//     }
-
 
 
     quad.v[0].z =             quad.v[1].z =            quad.v[2].z =            quad.v[3].z = 0.0f;
@@ -530,10 +493,6 @@ if (flipy)
 
    RenderQuad(&quad);
 
-
-// DrawRectangleLines(0,0, clip.width * size,clip.height * size,RED);
-// //DrawCircleLines((clip.width * size)/2 + px ,(clip.height * size)/2 + py,5,RED);
-// DrawCircle(px ,py,5,RED);
 
 
 

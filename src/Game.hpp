@@ -2,7 +2,7 @@
 #include "Core.hpp"
 #include "Utils.hpp"
 #include "Scene.hpp"
-
+#include "Assets.hpp"
 
 class Game;
 
@@ -22,12 +22,14 @@ public:
     void begin(int index=0);
     void end();
 
+    Graph* addGraph(const std::string &name, const std::string &path);
+    Graph* getGraph(const std::string &name);
     
     View *CreateView(int x, int y, int width, int height);
     View *getDefaultView() const;
     const View *getView(int index);
-
     const std::string &getName() const;
+
     
      int  getWidth() ;
      int  getHeight() ;
@@ -67,6 +69,11 @@ class  API_EXPORT Game
 
         void Update();
         void Render();
+
+
+
+        Graph* addGraph(const std::string &name, const std::string &path);
+        Graph* getGraph(const std::string &name);
 
         State *AddState(State *state);
         bool  ChangeState(const std::string &stateName);

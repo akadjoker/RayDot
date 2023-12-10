@@ -126,7 +126,7 @@ bool find_word(const std::string& haystack,const std::string& needle)
     if (index == std::string::npos) return false;
 
     auto not_part_of_word = [&](int index){
-        if (index < 0 || index >= haystack.size()) return true;
+        if (index < 0 || index >= (int)haystack.size()) return true;
         if (std::isspace(haystack[index]) || std::ispunct(haystack[index])) return true;
         return false;
     };

@@ -381,8 +381,8 @@ solids->bound.Set(0, 0, mWidth * mTileWidth, mHeight * mTileHeight);
         std::string layerName = layerElem->Attribute("name");
         int width     = layerElem->IntAttribute("width");
         int height    = layerElem->IntAttribute("height");
-        float offsetx = layerElem->FloatAttribute("offsetx");
-        float offsety = layerElem->FloatAttribute("offsety");
+       // float offsetx = layerElem->FloatAttribute("offsetx");
+       // float offsety = layerElem->FloatAttribute("offsety");
 
         TileMap *tileMap = new TileMap(image,layerName,width,height,mTileWidth,mTileHeight);
         

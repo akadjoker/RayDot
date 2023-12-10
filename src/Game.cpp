@@ -58,6 +58,16 @@ void State::end()
     rlViewport(0,0,screenWidth,screenHeight);
 }
 
+Graph *State::addGraph(const std::string &name, const std::string &path)
+{
+  return Assets::Instance().loadGraph(name, path);
+}
+
+Graph *State::getGraph(const std::string &name)
+{
+    return Assets::Instance().getGraph(name);
+}
+
 View *State::CreateView(int x, int y, int width, int height)
 {
     View *view = new View();
@@ -256,10 +266,19 @@ bool Game::ChangeState(const std::string &stateName)
     return false;
 }
 
+Graph *Game::addGraph(const std::string &name, const std::string &path)
+{
+    return Assets::Instance().loadGraph(name, path);
+}
 
 void Game::setClearColor(Color color)
 {
     clearColor = color;
+}
+
+Graph *Game::getGraph(const std::string &name)
+{
+    return Assets::Instance().getGraph(name);
 }
 
 Color Game::getClearColor() const
