@@ -1,198 +1,14 @@
 #include "Sprite2D.hpp"
-#include <raymath.h>
-#include "Math.hpp"
+#include "RenderUtils.hpp"
 
-void RenderQuad(const rQuad *quad)
-{
-
-    rlCheckRenderBatchLimit(4); // Make sure there is enough free space on the batch buffer
-    rlSetTexture(quad->tex.id);
-
-    rlBegin(RL_QUADS);
-
-    Color a = quad->v[1].col;
-    Color b = quad->v[0].col;
-    Color c = quad->v[3].col;
-    Color d = quad->v[2].col;
-
-    rlNormal3f(0.0f, 0.0f, 1.0f);
-
-    rlColor4ub(a.r, a.g, a.b, a.a);
-    rlTexCoord2f(quad->v[1].tx, quad->v[1].ty);
-    rlVertex3f(quad->v[1].x, quad->v[1].y, quad->v[1].z);
-
-    rlColor4ub(b.r, b.g, b.b, b.a);
-    rlTexCoord2f(quad->v[0].tx, quad->v[0].ty);
-    rlVertex3f(quad->v[0].x, quad->v[0].y, quad->v[0].z);
-
-    rlColor4ub(c.r, c.g, c.b, c.a);
-    rlTexCoord2f(quad->v[3].tx, quad->v[3].ty);
-    rlVertex3f(quad->v[3].x, quad->v[3].y, quad->v[3].z);
-
-    rlColor4ub(d.r, d.g, d.b, d.a);
-    rlTexCoord2f(quad->v[2].tx, quad->v[2].ty);
-    rlVertex3f(quad->v[2].x, quad->v[2].y, quad->v[2].z);
-
-    rlEnd();
-}
-
-void RenderTransform(Texture2D texture, const Matrix2D &matrix, int blend)
-{
-
-    rQuad quad;
-    quad.tex = texture;
-    quad.blend = blend;
-
-    float u = 0.0f;
-    float v = 0.0f;
-    float u2 = 1.0f;
-    float v2 = 1.0f;
-
-    float TempX1 = 0;
-    float TempY1 = 0;
-    float TempX2 = texture.width;
-    float TempY2 = texture.height;
-
-    quad.v[1].x = TempX1;
-    quad.v[1].y = TempY1;
-    quad.v[1].tx = u;
-    quad.v[1].ty = v;
-
-    quad.v[0].x = TempX1;
-    quad.v[0].y = TempY2;
-    quad.v[0].tx = u;
-    quad.v[0].ty = v2;
-
-    quad.v[3].x = TempX2;
-    quad.v[3].y = TempY2;
-    quad.v[3].tx = u2;
-    quad.v[3].ty = v2;
-
-    quad.v[2].x = TempX2;
-    quad.v[2].y = TempY1;
-    quad.v[2].tx = u2;
-    quad.v[2].ty = v;
-
-    for (int i = 0; i < 4; i++)
-    {
-        float x = quad.v[i].x;
-        float y = quad.v[i].y;
-        quad.v[i].x = matrix.a * x + matrix.c * y + matrix.tx;
-        quad.v[i].y = matrix.d * y + matrix.b * x + matrix.ty;
-
-        // Vector3 point = {quad.v[i].x, quad.v[i].y, 0.0f};
-        
-        // point = Vector3Transform(point, matrix);
-
-        // quad.v[i].x = point.x;
-        // quad.v[i].y = point.y;
-    }
-
-    quad.v[0].z = quad.v[1].z = quad.v[2].z = quad.v[3].z = 0.0f;
-    quad.v[0].col = quad.v[1].col = quad.v[2].col = quad.v[3].col = WHITE;
-
-    RenderQuad(&quad);
-}
-
-void RenderTransformFlipClip(Texture2D texture, int width, int height, Rectangle clip, bool flipX, bool flipY, Color color, const Matrix2D &matrix, int blend)
-{
-
-    rQuad quad;
-    quad.tex = texture;
-    quad.blend = blend;
-
-    int widthTex = texture.width;
-    int heightTex = texture.height;
-
-    float left;
-    float right;
-    float top;
-    float bottom;
-
-    if (FIX_ARTIFACTS_BY_STRECHING_TEXEL)
-    {
-        left = (2 * clip.x + 1) / (2 * widthTex);
-        right = left + (clip.width * 2 - 2) / (2 * widthTex);
-        top = (2 * clip.y + 1) / (2 * heightTex);
-        bottom = top + (clip.height * 2 - 2) / (2 * heightTex);
-    }
-    else
-    {
-        left = clip.x / widthTex;
-        right = (clip.x + clip.width) / widthTex;
-        top = clip.y / heightTex;
-        bottom = (clip.y + clip.height) / heightTex;
-    }
-
-    if (flipX)
-    {
-        float tmp = left;
-        left = right;
-        right = tmp;
-    }
-
-    if (flipY)
-    {
-        float tmp = top;
-        top = bottom;
-        bottom = tmp;
-    }
-
-    float TempX1 = 0;
-    float TempY1 = 0;
-    float TempX2 = width;
-    float TempY2 = height;
-
-    quad.v[1].x = TempX1;
-    quad.v[1].y = TempY1;
-    quad.v[1].tx = left;
-    quad.v[1].ty = top;
-
-    quad.v[0].x = TempX1;
-    quad.v[0].y = TempY2;
-    quad.v[0].tx = left;
-    quad.v[0].ty = bottom;
-
-    quad.v[3].x = TempX2;
-    quad.v[3].y = TempY2;
-    quad.v[3].tx = right;
-    quad.v[3].ty = bottom;
-
-    quad.v[2].x = TempX2;
-    quad.v[2].y = TempY1;
-    quad.v[2].tx = right;
-    quad.v[2].ty = top;
-
-    
-    for (int i = 0; i < 4; i++)
-    {
-        // Vector3 point = {quad.v[i].x, quad.v[i].y, 0.0f};
-        
-        // point = Vector3Transform(point, matrix);
-
-        // quad.v[i].x = point.x;
-        // quad.v[i].y = point.y;
-        float x = quad.v[i].x;
-        float y = quad.v[i].y;
-        quad.v[i].x = matrix.a * x + matrix.c * y + matrix.tx;
-        quad.v[i].y = matrix.d * y + matrix.b * x + matrix.ty;
-    }
-
-
-    quad.v[0].z = quad.v[1].z = quad.v[2].z = quad.v[3].z = 0.0f;
-    quad.v[0].col = quad.v[1].col = quad.v[2].col = quad.v[3].col = color;
-
-    RenderQuad(&quad);
-}
-
-
-Sprite2D::Sprite2D(): Node2D()
+Sprite2D::Sprite2D(): Node2D("Sprite2D")
 {
     this->graph = nullptr;
     this->clip = {0.0f, 0.0f, 0.0f, 0.0f};
     this->color = WHITE;
     this->flipX = false;
     this->flipY = false;
+    
     type = SPRITE2D;
 }
 
@@ -209,12 +25,13 @@ Sprite2D::Sprite2D(const std::string &name): Node2D(name)
 Sprite2D::Sprite2D(const std::string &name, const std::string &graphName): Node2D(name)
 {
     this->graph = Assets::Instance().getGraph(graphName);
+    this->clip = {0.0f, 0.0f, 0.0f, 0.0f};
     if (this->graph == nullptr)
     {
         clip.width  = graph->width;
         clip.height = graph->height;
     }
-    this->clip = {0.0f, 0.0f, 0.0f, 0.0f};
+    
     this->color = WHITE;
     this->flipX = false;
     this->flipY = false;
@@ -226,9 +43,9 @@ Sprite2D::~Sprite2D()
 }
 
 
-void Sprite2D::OnDraw()
+void Sprite2D::OnDraw(View *view)
 {
-    Node2D::OnDraw();
+    Node2D::OnDraw(view);
     if (graph != nullptr)
     {
         if (clip.width == 0.0f && clip.height == 0.0f)
@@ -237,6 +54,333 @@ void Sprite2D::OnDraw()
             clip.height = graph->height;
         }
       //  RenderMatrixFlipClip(graph->texture, clip.width, clip.height, clip, flipX, flipY, color, getWorldTransform(), BLEND_ALPHA);
-        RenderTransformFlipClip(graph->texture, clip.width, clip.height, clip, flipX, flipY, color, getWorldTransform(), BLEND_ALPHA);
+        RenderTransformFlipClip(graph->texture, clip.width, clip.height, clip, flipX, flipY, color, transform, BLEND_ALPHA);
     }
+}
+
+
+Frame::Frame(Graph *graph,const std::string &name, float fps,int frameWidth, int frameHeight, std::vector<Vector2> positions)
+{
+    this->fps = fps;
+    this->positions = positions;
+    this->graph = graph;
+    this->name = name;
+    this->frameWidth = frameWidth;
+    this->frameHeight = frameHeight;
+    this->count = (int)positions.size();
+}
+
+Frame::~Frame()
+{
+}
+
+
+AnimatedSprite2D::AnimatedSprite2D(): Node2D("AnimatedSprite2D")
+{
+color = WHITE;
+loop = true;
+}
+
+AnimatedSprite2D::AnimatedSprite2D(const std::string &name): Node2D(name)
+{
+color = WHITE;
+loop = true;
+}
+
+
+
+
+
+void AnimatedSprite2D::addFrame(const std::string &name,const std::string &g,float fps,int frameWidth, int frameHeight, int spacing )
+{
+    std::vector<Vector2> frames;
+    Graph *graph = Assets::Instance().getGraph(g);
+    if (!graph)
+    {
+        Log(LOG_ERROR,"AnimatedSprite2D::addFrame: graph not found");
+        return;
+    }
+    int columns  = graph->width / frameWidth;
+    int rows     = graph->height / frameHeight;
+
+    int numberOfFrames = columns * rows;
+    for (int i = 0; i < numberOfFrames; i++)
+    {
+        int x = (i % columns) * frameWidth;
+        int y = floor(i / columns) * frameHeight;
+
+        if (spacing > 0)
+        {
+            x += spacing + (spacing * i % columns);
+            y += spacing + (spacing * floor(i / columns));
+        }
+        frames.push_back({(float)x, (float)y});
+        
+    }
+    Log(LOG_INFO, "AnimatedSprite2D::addFrame: %s %d %d %d %d %d", name.c_str(), columns,rows,frameWidth,frameHeight,numberOfFrames);
+    Frame *frame = new Frame(graph,name, 1000.0f / fps,frameWidth,frameHeight,frames);
+    this->frames[name] = frame;    
+}
+
+void AnimatedSprite2D::play(const std::string &name,bool loop)
+{
+
+    std::string lastName;
+    if (current!=nullptr)
+    {
+      lastName=current->name;
+    }
+    current = getFrame(name);
+    if (current == nullptr)
+    {
+        Log(LOG_ERROR,"AnimatedSprite2D::play: frame not found");
+        return;
+    }
+
+    if (name == lastName && !loop)
+    {
+         return;
+    }
+    
+   if (name != lastName || !playing)
+    {
+        this->loop = loop;
+        playing = true;
+        stopped = false;
+        frameTime = 0.0f;
+        frameCounter = 0;
+        startFrame = 0;
+        currentFrame = startFrame;
+        endFrame     = current->count -1;
+        numberOfFrames = endFrame - startFrame -1;
+
+    //    Log(LOG_INFO, "AnimatedSprite2D::play: %s %d %d %d", name.c_str(), currentFrame, numberOfFrames ,endFrame);
+
+        clip.x = current->positions[currentFrame].x;
+        clip.y = current->positions[currentFrame].y;
+        clip.width  = current->frameWidth;   
+        clip.height = current->frameHeight;
+    }
+}
+
+void AnimatedSprite2D::play(const std::string &name, int startFrame, int endFrame, bool loop)
+{
+   std::string lastName;
+    if (current!=nullptr)
+    {
+      lastName=current->name;
+    }
+    current = getFrame(name);
+    if (current == nullptr)
+    {
+        Log(LOG_ERROR,"AnimatedSprite2D::play: frame not found");
+        return;
+    }
+
+    if (name == lastName && !loop)
+    {
+         return;
+    }
+    
+  
+
+    if ((!isCurrentInRange(startFrame, endFrame)) && ((startFrame >= 0 && endFrame < (int)current->positions.size()) || (stopped)))
+//    if ( (!isCurrentInRange(startFrame,endFrame)) &&  (startFrame >= 0 && endFrame <(int) current->positions.size()) || (stopped) ) 
+    {
+        
+        playing = true;
+        stopped = false;
+        frameCounter = 0;
+        frameTime = 0.0f;
+        this->startFrame = startFrame;
+        this->endFrame = endFrame;
+        this->loop = loop;
+        numberOfFrames = endFrame - startFrame -1;
+        currentFrame = startFrame;
+        clip.x = current->positions[currentFrame].x;
+        clip.y = current->positions[currentFrame].y;
+        clip.width  = current->frameWidth;   
+        clip.height = current->frameHeight;
+    } 
+}
+
+void AnimatedSprite2D::stop()
+{
+    if (current == nullptr || playing == false)
+    {
+        return;
+    }
+    playing = false;
+    stopped = true;
+}
+
+void AnimatedSprite2D::reset()
+{
+     if (current == nullptr)
+    {
+        return;
+    }
+    current = nullptr;
+    playing = false;
+    frameCounter = 0;
+    startFrame = 0;
+    endFrame = 0;
+    numberOfFrames = 0;
+    stopped = false;
+    currentFrame = 0;
+    frameTime = 0.0f;
+}
+
+void AnimatedSprite2D::OnDraw(View *view)
+{
+    Node2D::OnDraw(view);
+    if (current == nullptr) return;
+    if (!current->graph) return ;
+
+    
+    
+
+    clip.x = current->positions[currentFrame].x;
+    clip.y = current->positions[currentFrame].y;
+    clip.width  = current->frameWidth;   
+    clip.height = current->frameHeight;
+
+    if (stopped && !this->loop)
+    {
+        clip.x = current->positions[endFrame].x;
+        clip.y = current->positions[endFrame].y;
+        clip.width  = current->frameWidth;   
+        clip.height = current->frameHeight;
+    }
+    
+
+    RenderTransformFlipClip(current->graph->texture, clip.width, clip.height, clip, flipX, flipY, color, transform, BLEND_ALPHA);
+
+    DrawText(TextFormat("%d  %d  ",currentFrame,numberOfFrames),300,300,20,RED);
+
+}
+
+void AnimatedSprite2D::OnUpdate(double deltaTime)
+{
+    Node2D::OnUpdate(deltaTime);
+    if (current == nullptr)    return;
+    if (!current->graph)                            return ;
+    if (stopped)                                  return;
+    
+    frameTime += (deltaTime * 1000);
+    if (frameTime >= current->fps)
+    {
+        frameTime = 0.0f;
+        currentFrame = startFrame + frameCounter;
+        frameCounter++; 
+        if (frameCounter > numberOfFrames)
+        {
+            if (loop) frameCounter = 0;
+        }
+        
+
+        if (currentFrame > endFrame)
+        {
+            if (loop==true)
+            {
+                currentFrame = startFrame;
+                stopped = false;
+                playing = true;    
+              //  Log(LOG_INFO,"AnimatedSprite2D::OnUpdate: restart %d  %s ", currentFrame , current->name.c_str());
+            }
+            else
+            {
+                currentFrame = endFrame;
+                playing = false;
+                stopped = true;
+              //  Log(LOG_INFO,"AnimatedSprite2D::OnUpdate: stop %d  %s ", currentFrame , current->name.c_str());
+            }
+        }
+    }
+    //Log(LOG_INFO,"AnimatedSprite2D::OnUpdate: %d %d %f",currentFrame,numberOfFrames,frameTime);
+}
+
+
+AnimatedSprite2D::~AnimatedSprite2D()
+{
+
+     for (auto it = frames.begin(); it != frames.end(); it++)
+    {
+        delete it->second;
+    }
+    frames.clear();
+
+}
+
+bool AnimatedSprite2D::isCurrentInRange(int start, int end)
+{
+    if (currentFrame >= start && currentFrame <= end)
+    {
+        return true;
+    }
+    return false; 
+}
+
+bool AnimatedSprite2D::contains(const std::string &name)
+{
+    auto it = frames.find(name);
+    if (it != frames.end())
+    {
+        return true;
+    }
+    return false;
+}
+
+Frame *AnimatedSprite2D::getFrame(const std::string &name)
+{
+    auto it = frames.find(name);
+    if (it != frames.end())
+    {
+        return it->second;
+    }
+    return nullptr;
+}
+
+void AnimatedSprite2D::setLoop(bool loop)
+{
+    this->loop = loop;
+}
+
+bool AnimatedSprite2D::IsPlaying(const std::string &name)
+{
+    if (current == nullptr)
+    {
+        return false;
+    }
+    if (current->name == name && playing==true && stopped==false)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool AnimatedSprite2D::IsStopped(const std::string &name)
+{
+    if (current == nullptr)
+    {
+        return false;
+    }
+    if (current->name == name && stopped==true)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool AnimatedSprite2D::IsStopped()
+{
+    if (current == nullptr)
+    {
+        return false;
+    }
+    if (stopped==true)
+    {
+        return true;
+    }
+    return false;
 }

@@ -15,7 +15,7 @@ Graph *Assets::getGraph(const std::string &key)
     {
         return it->second;
     }
-    //Log(LOG_WARNING, "Graph %s not found", key.c_str());
+    
     return nullptr;
 }
 
@@ -26,6 +26,7 @@ bool Assets::hasGraph(const std::string &key)
     {
         return true;
     }
+    Log(LOG_WARNING, "Graph %s not found", key.c_str());
     return false;
 }
 

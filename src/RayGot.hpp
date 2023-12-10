@@ -7,4 +7,7 @@
 #include "Node2D.hpp"
 #include "Sprite2D.hpp"
 #include "Shape2D.hpp"
+#include "NodeEmitter2D.hpp"
+#include "NodeTileMap.hpp"
 #include "Scene.hpp"
+#include "Game.hpp"

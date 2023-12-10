@@ -58,5 +58,7 @@ typedef struct rQuad
 
 void Log(int severity, const char *fmt, ...);
 
-
+char* str_trim(char *str);
+int base64Decode(const unsigned char *in, unsigned int inLength, unsigned char **out);
+bool find_word(const std::string& haystack,const std::string& needle);
 
